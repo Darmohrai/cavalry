@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>EV Charging Network UI</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f9f9f9; }
+        .container { max-width: 600px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        input { width: 100%; padding: 8px; margin: 6px 0 12px 0; box-sizing: border-box; }
+        button { background: #007bff; color: white; border: none; padding: 10px 15px; cursor: pointer; border-radius: 4px; }
+        button:hover { background: #0056b3; }
+        ul { padding: 0; }
+        li { list-style: none; background: #fff; border: 1px solid #ddd; padding: 10px; margin-bottom: 8px; border-radius: 4px; }
+        .status { float: right; background: #e2e3e5; padding: 2px 6px; font-size: 12px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>EV Charging Network (UI)</h2>
+
+    <div style="background: #f1f1f1; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+        <h3>Створити станцію</h3>
+        <input type="text" id="name" placeholder="Назва станції">
+        <input type="text" id="location" placeholder="Локація">
+        <button onclick="createStation()">Створити</button>
+    </div>
+
+    <h3>Список станцій</h3>
+    <ul id="stationsList">Завантаження...</ul>
+</div>
+
+<script>
+    async function loadStations() {
+        try {
+            let response = await fetch('/api/stations');
+            if (response.redirected || response.status === 401) {
+                window.location.href = '/oauth2/authorization/keycloak';
+                return;
+            }
+            let stations = await response.json();
+            let list = document.getElementById('stationsList');
+            list.innerHTML = '';
+            if (stations.length === 0) {
+                list.innerHTML = '<li>Станцій ще немає</li>';
+                return;
+            }
+            stations.forEach(s => {
+                list.innerHTML += `<li><strong>${s.name}</strong> — ${s.location} <span class="status">${s.status}</span></li>`;
+            });
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    async function createStation() {
+        let name = document.getElementById('name').value;
+        let location = document.getElementById('location').value;
+        if (!name || !location) {
+            alert('Заповніть усі поля!');
+            return;
+        }
+
+        let response = await fetch('/api/stations', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, location })
+        });
+
+        if (response.ok) {
+            document.getElementById('name').value = '';
+            document.getElementById('location').value = '';
+            loadStations();
+        } else {
+            alert('Помилка! Можливо, у вас немає прав ADMIN.');
+        }
+    }
+
+    loadStations();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,67 @@
+### --- ADMINISTRATOR (ADMIN) ---
+
+### 1. Retrieve administrator token
+POST http://localhost:8080/realms/ev-network/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+client_id=ev-frontend&client_secret=secret&username=admin_user&password=admin123&grant_type=password
+
+> {%
+    client.global.set("admin_token", response.body.access_token);
+%}
+
+### 2. Retrieve all stations (GET - successful for ADMIN)
+GET http://localhost:8082/api/stations
+Authorization: Bearer {{admin_token}}
+
+### 3. Create new station (POST - successful for ADMIN)
+POST http://localhost:8082/api/stations
+Authorization: Bearer {{admin_token}}
+Content-Type: application/json
+
+{
+  "name": "Chernivtsi Main Hub",
+  "location": "вул. Університетська 28, Чернівці"
+}
+
+> {%
+    client.global.set("station_id", response.body.id);
+%}
+
+### 4. Full station update (PUT - successful for ADMIN)
+PUT http://localhost:8082/api/stations/{{station_id}}
+Authorization: Bearer {{admin_token}}
+Content-Type: application/json
+
+{
+  "name": "Chernivtsi Main Hub Updated",
+  "location": "вул. Головна 100, Чернівці",
+  "status": "ACTIVE"
+}
+
+
+### --- REGULAR USER (CUSTOMER) ---
+
+### 5. Retrieve regular user token
+POST http://localhost:8080/realms/ev-network/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+client_id=ev-frontend&client_secret=secret&username=customer_user&password=customer123&grant_type=password
+
+> {%
+    client.global.set("customer_token", response.body.access_token);
+%}
+
+### 6. Retrieve all stations (GET - successful for CUSTOMER)
+GET http://localhost:8082/api/stations
+Authorization: Bearer {{customer_token}}
+
+### 7. NEGATIVE TEST: Create station with CUSTOMER token (Expected 403 Forbidden)
+POST http://localhost:8082/api/stations
+Authorization: Bearer {{customer_token}}
+Content-Type: application/json
+
+{
+  "name": "Hacker Station",
+  "location": "Нелегальна локація"
+}
