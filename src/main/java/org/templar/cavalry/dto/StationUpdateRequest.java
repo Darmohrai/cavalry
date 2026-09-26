@@ -6,4 +6,5 @@ public record StationUpdateRequest(
         String name,
         String location,
         StationStatus status
-) {}
+) {
+}

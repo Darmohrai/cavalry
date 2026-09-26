@@ -10,4 +10,5 @@ public record StationCreateRequest(
         @NotBlank(message = "Локація не може бути порожньою")
         @ValidGpsLocation
         String location
-) {}
+) {
+}
