@@ -3,6 +3,8 @@ package org.templar.cavalry.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.templar.cavalry.annotation.ExtractUserId;
+import org.templar.cavalry.annotation.PostCreateEndpoint;
 import org.templar.cavalry.dto.StationCreateRequest;
 import org.templar.cavalry.dto.StationDto;
 import org.templar.cavalry.dto.StationUpdateRequest;
@@ -24,8 +26,7 @@ public class StationController {
         return service.getAllStations();
     }
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
+    @PostCreateEndpoint
     public StationDto create(@RequestBody StationCreateRequest request) {
         return service.createStation(request);
     }
@@ -44,5 +45,14 @@ public class StationController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable UUID id) {
         service.deleteStation(id);
+    }
+
+    @GetMapping("/my-actions")
+    public String getMyActions(@ExtractUserId String userId) {
+        if (userId == null) {
+            return "Користувач не автентифікований";
+        }
+
+        return "Список дій для Keycloak користувача з ID: " + userId;
     }
 }
