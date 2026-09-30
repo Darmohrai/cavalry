@@ -1,5 +1,6 @@
 package org.templar.cavalry.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +20,7 @@ import org.templar.cavalry.dto.StationDto;
 import org.templar.cavalry.dto.StationUpdateRequest;
 import org.templar.cavalry.entity.StationStatus;
 import org.templar.cavalry.service.StationService;
+import java.util.Scanner;
 
 import java.util.List;
 import java.util.UUID;
@@ -36,7 +38,7 @@ public class StationController {
     }
 
     @PostCreateEndpoint
-    public StationDto create(@RequestBody StationCreateRequest request) {
+    public StationDto create(@Valid @RequestBody StationCreateRequest request) {
         return service.createStation(request);
     }
 
@@ -59,9 +61,9 @@ public class StationController {
     @GetMapping("/my-actions")
     public String getMyActions(@ExtractUserId String userId) {
         if (userId == null) {
-            return "Користувач не автентифікований";
+            return "User is not authenticated";
         }
 
-        return "Список дій для Keycloak користувача з ID: " + userId;
+        return "List of actions for Keycloak user with ID: " + userId;
     }
 }
