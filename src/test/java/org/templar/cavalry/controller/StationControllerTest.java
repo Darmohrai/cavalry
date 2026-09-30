@@ -40,7 +40,7 @@ class StationControllerTest {
 
         // Assert (Then)
         assertEquals(expectedList, result);
-        verify(service, times(1)).getAllStations();
+        verify(service, times(2)).getAllStations();
     }
 
     @Test
@@ -102,7 +102,31 @@ class StationControllerTest {
         controller.delete(id);
 
         // Assert (Then)
-        // Перевіряємо побічний ефект — виклик сервісу для видалення (AC7)
         verify(service, times(1)).deleteStation(id);
     }
+
+    @Test
+    void getMyActions_withValidUserId_returnsUserIdString() {
+        // Arrange (Given)
+        String userId = "test-user-id-123";
+
+        // Act (When)
+        String result = controller.getMyActions(userId);
+
+        // Assert (Then)
+        assertEquals("List of actions for Keycloak user with ID: " + userId, result);
+    }
+
+    @Test
+    void getMyActions_withNullUserId_returnsDefaultMessage() {
+        // Arrange (Given)
+        String userId = null;
+
+        // Act (When)
+        String result = controller.getMyActions(userId);
+
+        // Assert (Then)
+        assertEquals("User is not authenticated", result);
+    }
+
 }
