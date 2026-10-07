@@ -1,5 +1,4 @@
 version: '3.8'
-
 services:
   postgres:
     image: postgres:16-alpine
@@ -25,18 +24,41 @@ services:
     volumes:
       - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
 
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: ev_rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
   backend:
-    build: .
+    build:
+      context: .
+      dockerfile: cavalry-backend/Dockerfile
     container_name: ev_backend
     ports:
       - "8082:8082"
     depends_on:
       - postgres
       - keycloak
+      - rabbitmq
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/ev_charge_db
       - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=http://keycloak:8080/realms/ev-network
       - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI=http://keycloak:8080/realms/ev-network
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: notification-service/Dockerfile
+    container_name: ev_notification
+    depends_on:
+      - rabbitmq
+    environment:
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
 
 volumes:
   pgdata:
